@@ -31,10 +31,10 @@ long heatingTime = 60;
 long coldTime = 60;
 long uvTime = 60;
 
-long saveTimeEngine;
-long saveTimeHeating;
-long saveTimeCold;
-long saveTimeUv;
+long saveTimeEngine = engineTime;
+long saveTimeHeating = heatingTime;
+long saveTimeCold = coldTime;
+long saveTimeUv = uvTime;
 
 void engineControl(){
   if(digitalRead(engine) == 0){
@@ -111,7 +111,7 @@ void displayInit(){
   lcd.setCursor(6, 0);
   lcd.print("CPM");
   lcd.setCursor(0, 1);
-  lcd.print("Version: 2.0");
+  lcd.print("Version: 2.1");
 
   delay(1500);
 
