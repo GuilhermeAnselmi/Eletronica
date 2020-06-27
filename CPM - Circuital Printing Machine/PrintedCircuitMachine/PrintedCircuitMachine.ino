@@ -26,10 +26,12 @@ unsigned long hangs = 0;
 
 int menu = 0, intership = 0;
 
-long engineTime = 60;
-long heatingTime = 60;
-long coldTime = 60;
-long uvTime = 60;
+long engineTime = 180;
+long heatingTime = 900;
+long coldTime = 180;
+long uvTime = 180;
+
+int maxTime = 900;
 
 long saveTimeEngine = engineTime;
 long saveTimeHeating = heatingTime;
@@ -111,7 +113,7 @@ void displayInit(){
   lcd.setCursor(6, 0);
   lcd.print("CPM");
   lcd.setCursor(0, 1);
-  lcd.print("Version: 2.1");
+  lcd.print("Version: 2.5");
 
   delay(1500);
 
@@ -277,25 +279,25 @@ void displayDown(){
 void timeUp(){
   switch(menu){
     case 0:
-      if(engineTime < 600){
+      if(engineTime < maxTime){
         engineTime += 60;
       }
       break;
 
     case 1:
-      if(heatingTime < 600){
+      if(heatingTime < maxTime){
         heatingTime += 60;
       }
       break;
 
     case 2:
-      if(coldTime < 600){
+      if(coldTime < maxTime){
         coldTime += 60;
       }
       break;
 
     case 3:
-      if(uvTime < 600){
+      if(uvTime < maxTime){
         uvTime += 60;
       }
       break;
@@ -307,31 +309,90 @@ void timeUp(){
 void timeDown(){
   switch(menu){
     case 0:
-      if(engineTime > 60){
+      if(engineTime > 0){
         engineTime -= 60;
       }
       break;
 
     case 1:
-      if(heatingTime > 60){
+      if(heatingTime > 0){
         heatingTime -= 60;
       }
       break;
 
     case 2:
-      if(coldTime > 60){
+      if(coldTime > 0){
         coldTime -= 60;
       }
       break;
 
     case 3:
-      if(uvTime > 60){
+      if(uvTime > 0){
         uvTime -= 60;
       }
       break;
   }
 
   displayEnter(menu);
+}
+
+bool cancel(){
+  unsigned long time1 = millis(), time2;
+  
+  while(millis() - time1 < 250){
+    
+  }
+
+  lcd.clear();
+  lcd.setCursor(4, 0);
+  lcd.print("Cancelar");
+  lcd.setCursor(0, 1);
+  lcd.print("Pressione Select");
+
+  time1 = millis();
+  
+  while(true){
+    if(millis() - time1 >= 5000){
+      return 1;
+    }
+
+    time2 = millis();
+    
+    if(digitalRead(done) == 0){
+      while(millis() - time2 < 250){
+    
+      }
+      return 1;
+    }else if(digitalRead(select) == 0){
+      digitalWrite(engine, 1);
+      digitalWrite(heating, 1);
+      digitalWrite(cold, 1);
+      digitalWrite(uv, 1);
+      digitalWrite(yellow, 0);
+
+      lcd.clear();
+      lcd.setCursor(4, 0);
+      lcd.print("Processo");
+      lcd.setCursor(4, 1);
+      lcd.print("Encerrado");
+
+      digitalWrite(buzzer, 1);
+      delay(800);
+      digitalWrite(buzzer, 0);
+      delay(800);
+    
+      digitalWrite(buzzer, 1);
+      delay(800);
+      digitalWrite(buzzer, 0);
+      delay(800);
+
+      displayInit();
+  
+      displayMenu(menu);
+      
+      return 0;
+    }
+  }
 }
 
 void startProcess(){
@@ -396,6 +457,20 @@ void startProcess(){
       
       while(digitalRead(security) == 1){
         temporary = millis();
+
+        if(digitalRead(done) == 0){
+          bool can = cancel();
+
+          if(can == 0){  
+            return 0;
+          }
+
+          lcd.clear();
+          lcd.setCursor(4, 0);
+          lcd.print("Processo");
+          lcd.setCursor(2, 1);
+          lcd.print("Interrompido");
+        }
       }
 
       lcd.clear();
@@ -415,6 +490,20 @@ void startProcess(){
     }else{
       digitalWrite(engine, 1);
       break;
+    }
+
+    if(digitalRead(done) == 0){
+      bool can = cancel();
+
+      if(can == 0){
+        return 0;
+      }
+
+      lcd.clear();
+      lcd.setCursor(2, 0);
+      lcd.print("Processo de");
+      lcd.setCursor(1, 1);
+      lcd.print("Centrifugacao");
     }
   }
 
@@ -450,6 +539,7 @@ void startProcess(){
       digitalWrite(red, 1);
 
       digitalWrite(heating, 1);
+      digitalWrite(cold, 1);
 
       digitalWrite(buzzer, 1);
       delay(1000);
@@ -457,6 +547,20 @@ void startProcess(){
       
       while(digitalRead(security) == 1){
         temporary = millis();
+
+        if(digitalRead(done) == 0){
+          bool can = cancel();
+
+          if(can == 0){
+            return 0;
+          }
+
+          lcd.clear();
+          lcd.setCursor(4, 0);
+          lcd.print("Processo");
+          lcd.setCursor(2, 1);
+          lcd.print("Interrompido");
+        }
       }
 
       lcd.clear();
@@ -473,9 +577,25 @@ void startProcess(){
     
     if((millis() - timer) < timeTwo){
       digitalWrite(heating, 0);
+      digitalWrite(cold, 0);
     }else{
       digitalWrite(heating, 1);
+      digitalWrite(cold, 1);
       break;
+    }
+
+    if(digitalRead(done) == 0){
+      bool can = cancel();
+
+      if(can == 0){
+        return 0;
+      }
+
+      lcd.clear();
+      lcd.setCursor(2, 0);
+      lcd.print("Processo de");
+      lcd.setCursor(3, 1);
+      lcd.print("Aquecimeto");
     }
   }
 
@@ -518,6 +638,20 @@ void startProcess(){
       
       while(digitalRead(security) == 1){
         temporary = millis();
+
+        if(digitalRead(done) == 0){
+          bool can = cancel();
+
+          if(can == 0){
+            return 0;
+          }
+
+          lcd.clear();
+          lcd.setCursor(4, 0);
+          lcd.print("Processo");
+          lcd.setCursor(2, 1);
+          lcd.print("Interrompido");
+        }
       }
 
       lcd.clear();
@@ -537,6 +671,20 @@ void startProcess(){
     }else{
       digitalWrite(cold, 1);
       break;
+    }
+
+    if(digitalRead(done) == 0){
+      bool can = cancel();
+
+      if(can == 0){
+        return 0;
+      }
+
+      lcd.clear();
+      lcd.setCursor(2, 0);
+      lcd.print("Processo de");
+      lcd.setCursor(2, 1);
+      lcd.print("Esfriamento");
     }
   }
 
@@ -644,6 +792,20 @@ void startProcess(){
       
       while(digitalRead(security) == 1){
         temporary = millis();
+
+        if(digitalRead(done) == 0){
+          bool can = cancel();
+
+          if(can == 0){
+            return 0;
+          }
+
+          lcd.clear();
+          lcd.setCursor(4, 0);
+          lcd.print("Processo");
+          lcd.setCursor(2, 1);
+          lcd.print("Interrompido");
+        }
       }
 
       lcd.clear();
@@ -663,6 +825,20 @@ void startProcess(){
     }else{
       digitalWrite(uv, 1);
       break;
+    }
+
+    if(digitalRead(done) == 0){
+      bool can = cancel();
+
+      if(can == 0){
+        return 0;
+      }
+
+      lcd.clear();
+      lcd.setCursor(2, 0);
+      lcd.print("Processo de");
+      lcd.setCursor(2, 1);
+      lcd.print("Esfriamento");
     }
   }
 
